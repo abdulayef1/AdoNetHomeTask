@@ -77,21 +77,32 @@ List<Worker> SearchWorkersByName(string name)
     using (SqlConnection connection = new(connectionString))
     {
         connection.Open();
-        string query = $"SELECT * FROM WORKERS where name={name}";
+        string query = $"SELECT * FROM WORKERS where name=@name";
+      
         SqlCommand command = new(query, connection);
+
+        command.Parameters.AddWithValue("@name", name);
         SqlDataReader reader = command.ExecuteReader();
 
-        while (reader.Read())
+        if (reader.HasRows)
         {
-            Worker worker = new Worker();
-            worker.Id = (int)reader["Id"];
-            worker.Name = (string)reader["Name"];
-            worker.Surname = (string)reader["Surname"];
-            worker.Salary = (int)reader["Salary"];
-            workers.Add(worker);
+            while (reader.Read())
+            {
+                Worker worker = new Worker();
+                worker.Id = (int)reader["Id"];
+                worker.Name = (string)reader["Name"];
+                worker.Surname = (string)reader["Surname"];
+                worker.Salary = (int)reader["Salary"];
+                workers.Add(worker);
+            }
         }
     }
 
+    
+    if (workers.Count==0)
+    {
+        throw new NotFoundException("Not found");
+    }
     return workers;
 }
 
@@ -112,7 +123,7 @@ List<Worker> SearchWorkersByName(string name)
 
 //Console.WriteLine(GetWorkerById(3).Surname);
 
-//foreach (var item in SearchWorkersByName("Mahammad"))
+//foreach (var item in SearchWorkersByName("ahammad"))
 //{
 //    Console.WriteLine(item.Id);
 //}
